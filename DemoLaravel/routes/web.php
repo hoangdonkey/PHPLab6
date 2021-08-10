@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Post;
-
+use App\Models\Task;
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,7 +15,7 @@ use App\Models\Post;
 |
 */
 
-Route::get('/', 'HomeController@showWelcome');
+// Route::get('/', 'HomeController@showWelcome');
 
 
 Route::get('about', 'AboutController@ShowDetails');
@@ -79,4 +80,35 @@ Route::get('findID', function () {
         echo $post->title . '<br>';
         echo $post->body . '<br><br>';
     }
+});
+
+
+//Task
+
+Route::get('/', function () {
+    $tasks = Task::orderBy('created_at', 'desc')->get();
+    return view('task', [
+        'tasks' => $tasks
+    ]);
+});
+
+Route::post('/task', function (Request $request) {
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|max:255'
+    ]);
+    if ($validator->fails()) {
+        return redirect('/')
+            ->withInput()
+            ->withErrors($validator);
+    }
+
+    $task = new Task;
+    $task->name = $request->name;
+    $task->save();
+    return redirect('/');
+});
+
+Route::delete('task/{task}', function ($id) {
+    Task::FindorFail($id)->delete();
+    return redirect('/');
 });
